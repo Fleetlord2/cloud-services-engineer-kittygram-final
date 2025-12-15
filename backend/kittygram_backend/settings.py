@@ -4,13 +4,15 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from django.core.management.utils import get_random_secret_key
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'default_key')
+SECRET_KEY = os.getenv('SECRET_KEY') or get_random_secret_key()
 
-DEBUG = os.getenv('DEBUG', 'False')
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
