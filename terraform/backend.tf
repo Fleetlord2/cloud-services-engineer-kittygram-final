@@ -4,7 +4,7 @@ terraform {
       s3 = "https://storage.yandexcloud.net"
     }
 
-    bucket = "fleetlord_bucket"
+    bucket = "fleetlord-backet"
     region = "ru-central1"
     key    = "terraform.tfstate"
 
