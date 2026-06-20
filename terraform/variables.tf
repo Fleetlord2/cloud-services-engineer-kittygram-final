@@ -1,10 +1,17 @@
-variable "yc_token" {
-  sensitive = true
+variable "ssh_public_key" {
+  description = "SSH public key for VM access"
+  type        = string
+  sensitive   = true
 }
 
-variable "cloud_id" {}
-variable "folder_id" {}
-
 variable "zone" {
-  default = "ru-central1-a"
+  description = "Yandex Cloud availability zone"
+  type        = string
+  default     = "ru-central1-a"
+}
+
+variable "image_id" {
+  description = "Boot disk (Ubuntu 24.04 LTS)"
+  type        = string
+  default     = "some_id"
 }

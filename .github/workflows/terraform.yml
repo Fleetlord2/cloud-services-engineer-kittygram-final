@@ -12,54 +12,62 @@ on:
           - plan
           - apply
           - destroy
-
 jobs:
   terraform:
     runs-on: ubuntu-latest
-
+    permissions:
+      id-token: write
+      contents: read
     defaults:
       run:
         working-directory: terraform
-
+    env:
+      TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+      YC_CLOUD_ID: ${{ secrets.CLOUD_ID }}
+      YC_FOLDER_ID: ${{ secrets.FOLDER_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
+      - name: Get IAM Token
+        id: get-iam-token
+        uses: docker://ghcr.io/yc-actions/yc-iam-token-fed:1.0.0
+        with:
+          yc-sa-id: ${{ secrets.YC_SA_ID }}
+
+      - name: Export IAM Token
+        env:
+          TOKEN: ${{ steps.get-iam-token.outputs.token }}
+        run: |
+          echo "::add-mask::$TOKEN"
+          echo "YC_TOKEN=$TOKEN" >> $GITHUB_ENV
+
+      - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Terraform Init
+      - name: Terraform Init        
         run: terraform init
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
         run: terraform plan
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          TF_VAR_yc_token: ${{ secrets.YC_TOKEN }}
-          TF_VAR_cloud_id: ${{ secrets.CLOUD_ID }}
-          TF_VAR_folder_id: ${{ secrets.FOLDER_ID }}
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
         run: terraform apply -auto-approve
+
+      - name: Update HOST secret
+        if: ${{ github.event.inputs.action == 'apply' }}
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          TF_VAR_yc_token: ${{ secrets.YC_TOKEN }}
-          TF_VAR_cloud_id: ${{ secrets.CLOUD_ID }}
-          TF_VAR_folder_id: ${{ secrets.FOLDER_ID }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          IP=$(terraform output -raw vm_ip)
+          echo "VM IP: $IP"
+          gh secret set HOST --body "$IP" --repo ${{ github.repository }}
+          echo "HOST secret updated"
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
         run: terraform destroy -auto-approve
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          TF_VAR_yc_token: ${{ secrets.YC_TOKEN }}
-          TF_VAR_cloud_id: ${{ secrets.CLOUD_ID }}
-          TF_VAR_folder_id: ${{ secrets.FOLDER_ID }}
