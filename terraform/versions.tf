@@ -8,7 +8,7 @@ terraform {
     endpoints = {
       s3 = "https://storage.yandexcloud.net"
     }
-    bucket = "s3-sayfullindev"
+    bucket = "fleetlord-backet"
     region = "ru-central1"
     key    = "tf-state.tfstate"
 
