@@ -13,5 +13,5 @@ variable "zone" {
 variable "image_id" {
   description = "Boot disk (Ubuntu 24.04 LTS)"
   type        = string
-  default     = "some_id"
+  default     = "fd8429vdm30a3688t25j"
 }
