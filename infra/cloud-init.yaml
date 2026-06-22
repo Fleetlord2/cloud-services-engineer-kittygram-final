@@ -5,7 +5,7 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
     ssh_authorized_keys:
-      - ${SSH_KEY}
+      - ${ssh_public_key}
 
 runcmd:
   - apt-get update
