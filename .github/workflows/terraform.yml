@@ -20,9 +20,9 @@ jobs:
       contents: read
     defaults:
       run:
-        working-directory: terraform
+        working-directory: infra
     env:
-      TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+      TF_VAR_ssh_public_key: ${{ secrets.SSH_KEY }}
       YC_CLOUD_ID: ${{ secrets.CLOUD_ID }}
       YC_FOLDER_ID: ${{ secrets.FOLDER_ID }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
